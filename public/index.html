@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Taking App</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #D0DFFA;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #333;
+        }
+        .logout-button {
+            padding: 8px 16px;
+            background-color: #f3f3f3;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .note-input {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            width: 70vw;
+        }
+        .note-input input,
+        .note-input textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .note-input button {
+            padding: 8px 16px;
+            background-color: #5F87E7;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .note-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .note {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            word-wrap: break-word;
+        }
+        .note-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Hello, {{ name }}</h1>
+    </div>
+    <div class="note-input">
+        <div class="note-header">
+            <p>
+                make a note
+            </p>
+        </div>
+        <input type="text" placeholder="Title" id="note-title">
+        <textarea placeholder="Take a note..." id="note-content"></textarea>
+        <button id="add-note">Add</button>
+    </div>
+    <div class="note-grid">
+        <!-- Notes will be displayed here -->
+    </div>
+
+
+<script>
+document.getElementById('add-note').addEventListener('click', function() {
+    const title = document.getElementById('note-title').value;
+    const content = document.getElementById('note-content').value;
+
+    fetch('/notes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: title, content: content }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        // Optionally, clear the input fields
+        document.getElementById('note-title').value = '';
+        document.getElementById('note-content').value = '';
+        // Optionally, fetch and display all notes again
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+});
+</script>
+
+</body>
+</html>
