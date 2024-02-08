@@ -21,10 +21,10 @@ $app->add(function ($request, $handler) {
 $capsule = new Capsule;
 $capsule->addConnection([
     'driver'    => 'mysql',
-    'host'      => 'your_host',
-    'database'  => 'your_database',
-    'username'  => 'your_username',
-    'password'  => 'your_password',
+    'host'      => 'localhost',
+    'database'  => 'slim_test',
+    'username'  => 'root',
+    'password'  => '',
     'charset'   => 'utf8',
     'collation' => 'utf8_unicode_ci',
     'prefix'    => '',
@@ -33,7 +33,7 @@ $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
 class Note extends Model {
-    protected $fillable = ['title', 'content'];
+    protected $fillable = ['title', 'content', 'due_date'];
 }
 
 // Serve the HTML page
@@ -48,7 +48,8 @@ $app->post('/notes', function (Request $request, Response $response, $args) {
     $body = json_decode($request->getBody()->getContents(), true);
     $note = Note::create([
         'title' => $body['title'],
-        'content' => $body['content']
+        'content' => $body['content'],
+        'due_date' => $body['due_date'] // Ensure this is correctly handled
     ]);
     $response->getBody()->write(json_encode($note));
     return $response->withHeader('Content-Type', 'application/json');
@@ -61,6 +62,17 @@ $app->get('/notes', function (Request $request, Response $response, $args) {
     $response->getBody()->write(json_encode($notes));
     return $response->withHeader('Content-Type', 'application/json');
 });
+
+// API endpoint to delete a note
+$app->delete('/notes/{id}', function (Request $request, Response $response, array $args) {
+    $id = $args['id'];
+    $note = Note::find($id);
+    if ($note) {
+        $note->delete();
+    }
+    return $response->withStatus(200); // You might want to return a different response or status code based on the outcome
+});
+
 
 
 $app->run();

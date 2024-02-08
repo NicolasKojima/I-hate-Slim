@@ -19,7 +19,7 @@
         }
         .header h1 {
             margin: 0;
-            color: #333;
+            color: white;
         }
         .logout-button {
             padding: 8px 16px;
@@ -34,11 +34,11 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            width: 70vw;
+            width: 20vw;
         }
         .note-input input,
         .note-input textarea {
-            width: 100%;
+            width: 90%;
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
@@ -68,52 +68,203 @@
             font-weight: bold;
             margin-bottom: 5px;
         }
+
+        .note-input-cont {
+            display: flex;
+            justify-content: center; 
+        }
+
+        .note-header {
+            display: grid;
+            grid-template-columns: 65% 35%;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .note-title {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow-x: auto;
+            max-width: 100%;
+            scrollbar-width: none; /* For Firefox */
+            -ms-overflow-style: none; /* For Internet Explorer 10+ */
+        }
+
+        .note-title::-webkit-scrollbar {
+            display: none; /* For WebKit browsers like Chrome and Safari */
+        }
+
+
+        .note-date {
+            font-weight: normal;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .note-content {
+            height: 150px; 
+            overflow-y: auto;
+            resize: none; 
+            scrollbar-width:none;
+            -ms-overflow-style: none; 
+            margin-top: 10px;
+        }
+
+        .note-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .header-section{
+            padding: 30px;
+            background-color:#222831;
+        }
+
+        .note-section {
+            padding: 30px;
+            background-color: #e4f1fe;
+        }
+
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Hello, {{ name }}</h1>
-    </div>
-    <div class="note-input">
-        <div class="note-header">
-            <p>
-                make a note
-            </p>
+    <div class="header-section">
+        <div class="header">
+            <h1>Nicolas' Note Application </h1>
         </div>
-        <input type="text" placeholder="Title" id="note-title">
-        <textarea placeholder="Take a note..." id="note-content"></textarea>
-        <button id="add-note">Add</button>
+        <div class="note-input-cont">
+            <div class="note-input">
+                <div class="note-header">
+                    <p>Make a to-do</p>
+                </div>
+                <input type="text" placeholder="Title" id="note-title">
+                <textarea placeholder="Take a note..." id="note-content"></textarea>
+                <input type="date" id="note-date"> <!-- Date input for the to-do due date -->
+                <button id="add-note">Add</button>
+            </div>
+        </div>
     </div>
-    <div class="note-grid">
-        <!-- Notes will be displayed here -->
+    <div class="note-section">
+        <div class="note-grid">
+            <!-- Notes will be displayed here -->
+        </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayNotes); // Ensure this line is added
+        
+        document.getElementById('add-note').addEventListener('click', function() {
+        const title = document.getElementById('note-title').value;
+        const content = document.getElementById('note-content').value;
+        const dueDate = document.getElementById('note-date').value; // Get the due date value
 
-<script>
-document.getElementById('add-note').addEventListener('click', function() {
-    const title = document.getElementById('note-title').value;
-    const content = document.getElementById('note-content').value;
-
-    fetch('/notes', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title: title, content: content }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-        // Optionally, clear the input fields
-        document.getElementById('note-title').value = '';
-        document.getElementById('note-content').value = '';
-        // Optionally, fetch and display all notes again
-    })
-    .catch((error) => {
-        console.error('Error:', error);
+        fetch('/notes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title: title, content: content, due_date: dueDate }), // Include the due date in the request
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            document.getElementById('note-title').value = '';
+            document.getElementById('note-content').value = '';
+            document.getElementById('note-date').value = ''; // Clear the date input
+            fetchAndDisplayNotes();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
     });
-});
-</script>
 
+    function fetchAndDisplayNotes() {
+        fetch('/notes')
+        .then(response => response.json())
+        .then(notes => {
+            const notesContainer = document.querySelector('.note-grid');
+            notesContainer.innerHTML = '';
+
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.classList.add('note');
+
+                noteElement.innerHTML = `
+                    <div class="note-header">
+                        <div class="note-title">${note.title}</div>
+                        <div class="note-date">${note.due_date || 'N/A'}</div>
+                    </div>
+                    <div class="note-content">${note.content}</div>
+                    <button class="delete-note" data-id="${note.id}">Delete</button>
+                    <button class="finish-note" data-id="${note.id}">Finished</button>
+                `;
+
+                notesContainer.appendChild(noteElement);
+            });
+
+            // Re-attach event listeners for delete buttons each time notes are fetched
+            document.querySelectorAll('.delete-note').forEach(button => {
+                button.addEventListener('click', function() {
+                    const noteId = this.getAttribute('data-id');
+                    deleteNote(noteId);
+                });
+            });
+
+            document.querySelectorAll('.finish-note').forEach(button => {
+                button.addEventListener('click', function() {
+                    const noteId = this.getAttribute('data-id');
+                    
+                    // Display the modal instead of alert
+                    document.getElementById('congratsModal').style.display = 'block';
+                    
+                    // Call deleteNote to delete the note
+                    deleteNote(noteId);
+                });
+            });
+        })
+        .catch(error => console.error('Error fetching notes:', error));
+    }
+
+
+    // Function to delete a note by ID
+    function deleteNote(noteId) {
+        // Confirmation dialog
+        if (!confirm("Are you sure you would like to delete this note?")) {
+            return; // Exit if the user clicks "Cancel"
+        }
+
+        fetch(`/notes/${noteId}`, { // Adjust the URL to match your API endpoint
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("Note deleted successfully.");
+                fetchAndDisplayNotes(); // Refresh the list of notes after deletion
+            }
+        })
+        .catch(error => console.error('Error deleting note:', error));
+    }
+    
+    
+    // Function for finishing a note by ID
+    document.querySelectorAll('.finish-note').forEach(button => {
+        button.addEventListener('click', function() {
+            // Show a congratulatory message
+            alert("Congratulations on completing the task!");
+            // Optionally, you can also call a function here to handle task completion,
+            // like updating the note's status in the database.
+        });
+    });
+
+
+        </script>
+        
+        <div id="congratsModal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+            <!-- Modal content -->
+            <div style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 400px; text-align: center;">
+                <p>Congratulations on completing the task!</p>
+                <div class="tenor-gif-embed" data-postid="14678282" data-share-method="host" data-aspect-ratio="1" data-width="100%"><a href="https://tenor.com/view/congratulations-congrats-tonton-friends-tonton-tontongif-gif-14678282">Congratulations Congrats Sticker</a>from <a href="https://tenor.com/search/congratulations-stickers">Congratulations Stickers</a></div> 
+                <script type="text/javascript" async src="https://tenor.com/embed.js"></script>                <button onclick="document.getElementById('congratsModal').style.display='none'">Close</button>
+            </div>
+        </div>
 </body>
 </html>
