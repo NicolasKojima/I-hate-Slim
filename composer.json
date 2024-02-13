@@ -7,5 +7,8 @@
         "guzzlehttp/psr7": "1",
         "laminas/laminas-diactoros": "^3.3",
         "illuminate/database": "^10.43"
+    },
+    "scripts": {
+        "start": "php -S localhost:8000 -t public public/index.php"
     }
 }

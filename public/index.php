@@ -22,9 +22,9 @@ $capsule = new Capsule;
 $capsule->addConnection([
     'driver'    => 'mysql',
     'host'      => 'localhost',
-    'database'  => 'slim_test',
+    'database'  => 'notes_app',
     'username'  => 'root',
-    'password'  => '',
+    'password'  => 'FuckYouHacker0303',
     'charset'   => 'utf8',
     'collation' => 'utf8_unicode_ci',
     'prefix'    => '',
