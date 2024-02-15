@@ -24,7 +24,7 @@ $capsule->addConnection([
     'host'      => 'localhost',
     'database'  => 'notes_app',
     'username'  => 'root',
-    'password'  => 'FuckYouHacker0303',
+    'password'  => 'fuckyouhacker0303',
     'charset'   => 'utf8',
     'collation' => 'utf8_unicode_ci',
     'prefix'    => '',
